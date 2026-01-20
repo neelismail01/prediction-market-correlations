@@ -31,10 +31,10 @@ interface SeriesSyncResponse {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { seriesTicker: string } }
+  { params }: { params: Promise<{ seriesTicker: string }> }
 ) {
   const startTime = Date.now();
-  const seriesTicker = params.seriesTicker;
+  const { seriesTicker } = await params;
 
   if (!seriesTicker || seriesTicker.trim() === '') {
     console.error('[SYNC] Missing series ticker parameter');
