@@ -1,0 +1,21 @@
+name: Collect Market Prices
+
+on:
+  schedule:
+    # Runs every hour at minute 0 (uses UTC time)
+    - cron: '0 * * * *'
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  collect-prices:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Collect Latest Kalshi Market Prices
+        run: |
+          curl -X GET \
+            "https://prediction-market-correlations.vercel.app/api/kalshi/sync" \
+            -H "Authorization: Bearer ${{ secrets.COLLECT_KALSHI_PRICES_CRON_JOB_SECRET }}" \
+            -f
