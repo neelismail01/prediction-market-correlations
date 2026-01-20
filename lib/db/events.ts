@@ -4,19 +4,23 @@ import type { KalshiEvent } from '../kalshi/types';
 export interface EventRecord {
   id?: number;
   event_ticker: string;
-  series_ticker: string;
+  series_id: number;
   title: string | null;
   sub_title: string | null;
 }
 
 /**
  * Upserts an event record (inserts if new, updates if exists)
+ * Requires series_id to be provided (look it up first using getSeriesId from lib/db/series)
  * Returns the event ID
  */
-export async function upsertEvent(event: KalshiEvent): Promise<number> {
+export async function upsertEvent(
+  event: KalshiEvent,
+  seriesId: number
+): Promise<number> {
   const eventRecord: EventRecord = {
     event_ticker: event.event_ticker,
-    series_ticker: event.series_ticker,
+    series_id: seriesId,
     title: event.title || null,
     sub_title: event.sub_title || null,
   };
@@ -48,18 +52,22 @@ export async function upsertEvent(event: KalshiEvent): Promise<number> {
 
 /**
  * Upserts multiple events in a batch
+ * Requires series_id to be provided (look it up first using getSeriesId from lib/db/series)
+ * All events in the batch must belong to the same series
  * Returns a map of event_ticker -> id
  */
 export async function upsertEvents(
-  events: KalshiEvent[]
+  events: KalshiEvent[],
+  seriesId: number
 ): Promise<Map<string, number>> {
   if (events.length === 0) {
     return new Map();
   }
 
+  // Map events to event records with series_id
   const eventRecords: EventRecord[] = events.map((event) => ({
     event_ticker: event.event_ticker,
-    series_ticker: event.series_ticker,
+    series_id: seriesId,
     title: event.title || null,
     sub_title: event.sub_title || null,
   }));

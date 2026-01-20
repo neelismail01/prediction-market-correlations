@@ -5,6 +5,7 @@ import {
   fetchMarketPricing,
 } from '@/lib/kalshi/api';
 import { upsertEvents } from '@/lib/db/events';
+import { getSeriesId } from '@/lib/db/series';
 import { upsertMarkets } from '@/lib/db/markets';
 import { insertMarketSnapshots } from '@/lib/db/snapshots';
 import type { KalshiEvent, KalshiMarket } from '@/lib/kalshi/types';
@@ -91,12 +92,43 @@ export async function GET(
       );
     }
 
-    // Step 2: Upsert events to database and get event ID map
+    // Step 2: Look up series_id from database
+    let seriesId: number;
+    try {
+      console.log(`[SYNC] [${seriesTicker}] Looking up series_id...`);
+      seriesId = await getSeriesId(seriesTicker);
+      console.log(`[SYNC] [${seriesTicker}] ✓ Found series_id: ${seriesId}`);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[SYNC] [${seriesTicker}] ✗ Failed to lookup series_id: ${errorMessage}`);
+      return NextResponse.json<SeriesSyncResponse>(
+        {
+          success: false,
+          series_ticker: seriesTicker,
+          eventsFetched,
+          eventsUpserted: 0,
+          marketsFetched: 0,
+          marketsUpserted: 0,
+          snapshotsCreated: 0,
+          errors: [
+            {
+              type: 'lookup_series',
+              message: `Failed to lookup series_id for series ${seriesTicker}: ${errorMessage}`,
+              context: seriesTicker,
+            },
+          ],
+        },
+        { status: 404 }
+      );
+    }
+
+    // Step 3: Upsert events to database and get event ID map
     let eventIdMap = new Map<string, number>();
     if (events.length > 0) {
       console.log(`[SYNC] [${seriesTicker}] Upserting ${events.length} events to database...`);
       try {
-        eventIdMap = await upsertEvents(events);
+        eventIdMap = await upsertEvents(events, seriesId);
         eventsUpserted = events.length;
         console.log(`[SYNC] [${seriesTicker}] ✓ Upserted ${events.length} events`);
       } catch (error) {
@@ -138,7 +170,7 @@ export async function GET(
     }
     console.log(`[SYNC] [${seriesTicker}] ✓ Fetched ${allMarkets.length} total markets`);
 
-    // Step 4: Upsert markets to database and get market ID map
+    // Step 5: Upsert markets to database and get market ID map
     let marketIdMap = new Map<string, number>();
     if (allMarkets.length > 0) {
       console.log(`[SYNC] [${seriesTicker}] Upserting ${allMarkets.length} markets to database...`);
@@ -212,7 +244,7 @@ export async function GET(
     }
     console.log(`[SYNC] [${seriesTicker}] ✓ Fetched pricing for ${snapshots.length} markets`);
 
-    // Step 6: Insert snapshots in batches
+    // Step 7: Insert snapshots in batches
     if (snapshots.length > 0) {
       console.log(`[SYNC] [${seriesTicker}] Inserting ${snapshots.length} price snapshots...`);
       try {
