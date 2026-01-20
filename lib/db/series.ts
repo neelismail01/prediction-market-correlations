@@ -1,5 +1,12 @@
 import { supabase } from '../supabase/client';
-import type { Series } from '@/lib/kalshi/types';
+
+export interface Series {
+  id: number;
+  created_at: string;
+  series_ticker: string;
+  title: string;
+  category: string;
+}
 
 export async function getAllSeries(): Promise<Series[]> {
   const { data, error } = await supabase
