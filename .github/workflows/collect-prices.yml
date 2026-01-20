@@ -12,10 +12,23 @@ jobs:
   collect-prices:
     runs-on: ubuntu-latest
     
+    strategy:
+      # Don't cancel other jobs if one fails
+      fail-fast: false
+      
+      # Run for each series in parallel
+      matrix:
+        series_ticker:
+          - KXFEDDECISION
+          - KXFED
+          - KXINXY
+          - KXPRESPERSON
+    
     steps:
-      - name: Collect Latest Kalshi Market Prices
+      - name: Sync series ${{ matrix.series_ticker }}
         run: |
           curl -X GET \
-            "https://prediction-market-correlations.vercel.app/api/kalshi/sync" \
+            "https://prediction-market-correlations.vercel.app/api/kalshi/series/${{ matrix.series_ticker }}" \
             -H "Authorization: Bearer ${{ secrets.COLLECT_KALSHI_PRICES_CRON_JOB_SECRET }}" \
+            -s -w "\nHTTP Status: %{http_code}\n" \
             -f

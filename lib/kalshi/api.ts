@@ -5,9 +5,7 @@ import type {
 } from './types';
 
 // Kalshi API base URL - can be overridden with environment variable
-const KALSHI_API_BASE_URL =
-  process.env.KALSHI_API_BASE_URL ||
-  'https://api.elections.kalshi.com/trade-api/v2';
+const KALSHI_API_BASE_URL = 'https://api.elections.kalshi.com/trade-api/v2';
 
 const FETCH_TIMEOUT = 10000; // 10 seconds
 
