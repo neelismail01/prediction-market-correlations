@@ -1,4 +1,17 @@
 import { supabase } from '../supabase/client';
+import type { Series } from '@/lib/kalshi/types';
+
+export async function getAllSeries(): Promise<Series[]> {
+  const { data, error } = await supabase
+    .from('series')
+    .select('*');
+
+  if (error) {
+    throw new Error(`Failed to fetch series: ${error.message}`);
+  }
+
+  return data || [];
+}
 
 /**
  * Looks up the series_id from the series table using series_ticker
