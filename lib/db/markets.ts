@@ -109,3 +109,50 @@ export async function upsertMarkets(
 
   return marketIdMap;
 }
+
+/**
+ * Fetches all markets for dropdown/list use.
+ * Returns market_ticker and title, ordered by market_ticker.
+ */
+export async function getAllMarkets(): Promise<
+  { id: number; market_ticker: string; title: string | null }[]
+> {
+  const { data, error } = await supabase
+    .from('markets')
+    .select('id, market_ticker, title')
+    .order('market_ticker', { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch markets: ${error.message}`);
+  }
+
+  return data ?? [];
+}
+
+/**
+ * Fetches a market by its Kalshi market ticker.
+ * Returns the market record (including id) or null if not found.
+ */
+export async function getMarketByTicker(
+  marketTicker: string
+): Promise<(MarketRecord & { id: number }) | null> {
+  const { data, error } = await supabase
+    .from('markets')
+    .select('id, market_ticker, event_id, title, status')
+    .eq('market_ticker', marketTicker)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to fetch market: ${error.message}`);
+  }
+
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    market_ticker: data.market_ticker,
+    event_id: data.event_id,
+    title: data.title,
+    status: data.status,
+  };
+}
