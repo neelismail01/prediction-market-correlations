@@ -1,4 +1,3 @@
-import { Paper, Typography, Box } from '@mui/material';
 import { Series } from './types';
 
 interface SeriesCardProps {
@@ -7,21 +6,13 @@ interface SeriesCardProps {
 
 export default function SeriesCard({ series }: SeriesCardProps) {
   return (
-    <Paper elevation={2} sx={{ p: 3 }}>
-      <Typography variant="h6" component="h3" gutterBottom>
-        {series.title}
-      </Typography>
-      <Box sx={{ mt: 1 }}>
-        <Typography variant="body1" sx={{ mb: 1 }}>
-          <strong>Ticker:</strong> {series.series_ticker}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
-          <strong>Category:</strong> {series.category}
-        </Typography>
-        <Typography variant="body1">
-          <strong>ID:</strong> {series.id}
-        </Typography>
-      </Box>
-    </Paper>
+    <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 shadow-sm">
+      <h3 className="text-lg font-semibold mb-2">{series.title}</h3>
+      <div className="mt-2 space-y-1 text-sm">
+        <p><strong>Ticker:</strong> {series.series_ticker}</p>
+        <p><strong>Category:</strong> {series.category}</p>
+        <p><strong>ID:</strong> {series.id}</p>
+      </div>
+    </div>
   );
 }

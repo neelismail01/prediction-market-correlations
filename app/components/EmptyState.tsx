@@ -1,15 +1,11 @@
-import { Box, Typography } from '@mui/material';
-
 interface EmptyStateProps {
   message: string;
 }
 
 export default function EmptyState({ message }: EmptyStateProps) {
   return (
-    <Box sx={{ textAlign: 'center', py: 8 }}>
-      <Typography variant="body1" color="text.secondary">
-        {message}
-      </Typography>
-    </Box>
+    <div className="text-center py-8">
+      <p className="text-zinc-500 dark:text-zinc-400">{message}</p>
+    </div>
   );
 }

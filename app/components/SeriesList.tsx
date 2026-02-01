@@ -1,4 +1,3 @@
-import { Box, Typography } from '@mui/material';
 import { Series } from './types';
 import SeriesCard from './SeriesCard';
 
@@ -12,15 +11,13 @@ export default function SeriesList({ series }: SeriesListProps) {
   }
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h5" component="h2" gutterBottom>
-        Selected Series ({series.length})
-      </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+    <div className="mt-4">
+      <h2 className="text-xl font-medium mb-4">Selected Series ({series.length})</h2>
+      <div className="flex flex-col gap-4 mt-4">
         {series.map((s) => (
           <SeriesCard key={s.id} series={s} />
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
