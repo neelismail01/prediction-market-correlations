@@ -1,3 +1,13 @@
+# Collect Market Prices
+#
+# Design: Supports two kinds of sync targets:
+# 1. Series — syncs all events in a Kalshi series (e.g. KXFEDDECISION).
+# 2. Event  — syncs a single event by ticker (for events not part of a tracked series).
+#
+# Add or remove targets via the matrix.include list below.
+# - type: series, ticker: <series_ticker>  → GET /api/kalshi/series/<ticker>
+# - type: event,  ticker: <event_ticker>   → GET /api/kalshi/events/<ticker>
+
 name: Collect Market Prices
 
 on:
@@ -9,26 +19,33 @@ on:
   workflow_dispatch:
 
 jobs:
-  collect-prices:
+  collect-kalshi-prices:
     runs-on: ubuntu-latest
     
     strategy:
-      # Don't cancel other jobs if one fails
       fail-fast: false
-      
-      # Run for each series in parallel
       matrix:
-        series_ticker:
-          - KXFEDDECISION
-          - KXFED
-          - KXINXY
-          - KXPRESPERSON
+        include:
+          # Series targets (all events in the series are synced)
+          - type: series
+            ticker: KXFEDDECISION
+          - type: series
+            ticker: KXFED
+          - type: series
+            ticker: KXINXY
+          - type: series
+            ticker: KXPRESPERSON
     
     steps:
-      - name: Sync series ${{ matrix.series_ticker }}
+      - name: Sync Kalshi ${{ matrix.type }} ${{ matrix.ticker }}
         run: |
+          if [ "${{ matrix.type }}" = "series" ]; then
+            URL="https://prediction-market-correlations.vercel.app/api/sync/kalshi/series/${{ matrix.ticker }}"
+          else
+            URL="https://prediction-market-correlations.vercel.app/api/sync/kalshi/events/${{ matrix.ticker }}"
+          fi
           curl -X GET \
-            "https://prediction-market-correlations.vercel.app/api/kalshi/series/${{ matrix.series_ticker }}" \
+            "$URL" \
             -H "Authorization: Bearer ${{ secrets.COLLECT_KALSHI_PRICES_CRON_JOB_SECRET }}" \
             -s -w "\nHTTP Status: %{http_code}\n" \
             -f
