@@ -6,7 +6,7 @@ export interface MarketRecord {
   market_ticker: string;
   event_id: number;
   title: string | null;
-  status: string;
+  status: KalshiMarket['status'];
 }
 
 /**
@@ -78,7 +78,7 @@ export async function upsertMarkets(
         status: market.status,
       };
     })
-    .filter((record): record is MarketRecord => record !== null);
+    ;
 
   const now = new Date().toISOString();
   const recordsWithTimestamps = marketRecords.map((record) => ({
